@@ -3,26 +3,24 @@ using Toybox.Communications as Comm;
 using Toybox.WatchUi as Ui;
 using Hass;
 
-
 class HassControlApp extends App.AppBase {
   static const SCENES_VIEW = "scenes";
   static const ENTITIES_VIEW = "entities";
+  static const ENTITIES_SCENES_VIEW = "entities_scenes";
   static const STORAGE_KEY_START_VIEW = "start_view";
 
   var viewController;
   var menu;
 
-  function initialize() {
-    AppBase.initialize();
-  }
+  function initialize() { AppBase.initialize(); }
 
   /*
    * TODO:
-   * - Move all strings to xml
-   * - Create a custom menu that can rerender
-   * - Take control over the view handeling to get rid of blinking views
+   * - Flytta all strings till xml
+   * - Skapa en custom meny som man kan rendera om
+   * - Ta kontroll äver view hanteringen för att bli av med blinkande views
    *
-  */
+   */
 
   function launchInitialView() {
     var initialView = getStartView();
@@ -32,6 +30,9 @@ class HassControlApp extends App.AppBase {
     }
     if (initialView.equals(HassControlApp.SCENES_VIEW)) {
       return viewController.pushSceneView();
+    }
+    if (initialView.equals(HassControlApp.ENTITIES_SCENES_VIEW)) {
+      return viewController.pushEntityScenesView();
     }
 
     return viewController.pushSceneView();
@@ -44,9 +45,7 @@ class HassControlApp extends App.AppBase {
     Ui.requestUpdate();
   }
 
-  function logout() {
-    Hass.client.logout();
-  }
+  function logout() { Hass.client.logout(); }
 
   function onLoggedIn(error, data) {
     if (error != null) {
@@ -55,11 +54,11 @@ class HassControlApp extends App.AppBase {
   }
 
   function login() {
-    var callback = method(:onLoggedIn);
+    var callback = method( : onLoggedIn);
 
     // TODO: should move validation into client
     if (Hass.client.validateSettings(callback) != null) {
-        return;
+      return;
     }
 
     Hass.client.login(callback);
@@ -70,8 +69,12 @@ class HassControlApp extends App.AppBase {
 
     if (startView != null && startView.equals(HassControlApp.SCENES_VIEW)) {
       return HassControlApp.SCENES_VIEW;
-    } else if (startView != null && startView.equals(HassControlApp.ENTITIES_VIEW)) {
+    } else if (startView != null &&
+               startView.equals(HassControlApp.ENTITIES_VIEW)) {
       return HassControlApp.ENTITIES_VIEW;
+    } else if (startView != null &&
+               startView.equals(HassControlApp.ENTITIES_SCENES_VIEW)) {
+      return HassControlApp.ENTITIES_SCENES_VIEW;
     }
 
     return HassControlApp.ENTITIES_VIEW;
@@ -79,33 +82,26 @@ class HassControlApp extends App.AppBase {
 
   function setStartView(newStartView) {
     if (newStartView.equals(HassControlApp.ENTITIES_VIEW)) {
-      App.Storage.setValue(
-        HassControlApp.STORAGE_KEY_START_VIEW,
-        HassControlApp.ENTITIES_VIEW
-      );
+      App.Storage.setValue(HassControlApp.STORAGE_KEY_START_VIEW,
+                           HassControlApp.ENTITIES_VIEW);
     } else if (newStartView.equals(HassControlApp.SCENES_VIEW)) {
-      App.Storage.setValue(
-        HassControlApp.STORAGE_KEY_START_VIEW,
-        HassControlApp.SCENES_VIEW
-      );
+      App.Storage.setValue(HassControlApp.STORAGE_KEY_START_VIEW,
+                           HassControlApp.SCENES_VIEW);
+    } else if (newStartView.equals(HassControlApp.ENTITIES_SCENES_VIEW)) {
+      App.Storage.setValue(HassControlApp.STORAGE_KEY_START_VIEW,
+                           HassControlApp.ENTITIES_SCENES_VIEW);
     } else {
       throw new Toybox.Lang.InvalidValueException();
     }
   }
 
-  function isLoggedIn() {
-    return Hass.client.isLoggedIn();
-  }
+  function isLoggedIn() { return Hass.client.isLoggedIn(); }
 
   function onStart(state) {}
 
   function onStop(state) {}
 
-  function getGlanceView() {
-    return [
-      new AppGlance()
-    ];
-  }
+  function getGlanceView() { return [new AppGlance()]; }
 
   // Return the initial view of your application here
   function getInitialView() {
@@ -124,7 +120,7 @@ class HassControlApp extends App.AppBase {
     var view = null;
     var delegate = null;
 
-    if (deviceSettings has :isGlanceModeEnabled) {
+    if (deviceSettings has : isGlanceModeEnabled) {
       if (deviceSettings.isGlanceModeEnabled) {
         var initialView = getStartView();
 
@@ -138,6 +134,11 @@ class HassControlApp extends App.AppBase {
           view = sceneView[0];
           delegate = sceneView[1];
         }
+        if (initialView.equals(HassControlApp.ENTITIES_SCENES_VIEW)) {
+          var sceneView = viewController.getEntitySceneView();
+          view = sceneView[0];
+          delegate = sceneView[1];
+        }
       }
     }
 
@@ -146,10 +147,6 @@ class HassControlApp extends App.AppBase {
       delegate = new BaseDelegate();
     }
 
-
-    return [
-      view,
-      delegate
-    ];
+    return [ view, delegate ];
   }
 }

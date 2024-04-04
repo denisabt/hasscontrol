@@ -27,8 +27,8 @@ class ViewController {
 
 
   // TODO:
-  // Delay to close the loader
-  // What happens if the user closes the loader before the app closes the loader?
+  // Delay för att stänga loader
+  // vad händer om användaren stänger loader innan appen stänger loader?
 
 
   // Since the progress bar is not a normal view,
@@ -61,8 +61,29 @@ class ViewController {
         Hass.TYPE_BINARY_SENSOR,
         Hass.TYPE_INPUT_BOOLEAN,
         Hass.TYPE_BUTTON,
-        Hass.TYPE_INPUT_BUTTON,
-        Hass.TYPE_SENSOR
+        Hass.TYPE_INPUT_BUTTON
+      ]
+    );
+
+    return [
+      new EntityListView(controller),
+      new EntityListDelegate(controller)
+    ];
+  }
+
+  function getEntitySceneView() 
+  {
+    var controller = new EntityListController(
+      [
+        Hass.TYPE_SCENE,
+        Hass.TYPE_LIGHT,
+        Hass.TYPE_SWITCH,
+        Hass.TYPE_AUTOMATION,
+        Hass.TYPE_SCRIPT,
+        Hass.TYPE_LOCK,
+        Hass.TYPE_COVER,
+        Hass.TYPE_BINARY_SENSOR,
+        Hass.TYPE_INPUT_BOOLEAN
       ]
     );
 
@@ -112,6 +133,26 @@ class ViewController {
     );
   }
 
+  function pushEntityScenesView() {
+    var view = getEntitySceneView();
+
+    Ui.pushView(
+      view[0],
+      view[1],
+      Ui.SLIDE_IMMEDIATE
+    );
+  }
+
+  function switchEntitySceneView() {
+    var view = getEntitySceneView();
+
+    Ui.switchToView(
+      view[0],
+      view[1],
+      Ui.SLIDE_IMMEDIATE
+    );
+  }
+
   function showLoginView(show) {
     System.println("Show login? " + show);
     if (!_loginView.isActive() && show == true) {
@@ -127,7 +168,7 @@ class ViewController {
     }
 
   }
-
+ 
   function showLoader(text) {
     if (isShowingLoader()) {
       Ui.popView(Ui.SLIDE_IMMEDIATE);
@@ -180,10 +221,6 @@ class ViewController {
         if (error instanceof Hass.OAuthError) {
           message += "\nauth ";
         }
-
-        if(error.code == Error.ERROR_PHONE_NOT_CONNECTED) {
-          Ui.popView(Ui.SLIDE_IMMEDIATE);
-          }
       }
 
       if (error.context != null) {
